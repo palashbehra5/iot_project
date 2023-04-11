@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">iot_1</string>
+    <string name="enter_mac_address">Enter MAC address</string>
+    <string name="connect">Connect</string>
+    <string name="send">Send</string>
+    <string name="textview">TextView</string>
+</resources>
