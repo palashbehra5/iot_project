@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">sockets</string>
+    <string name="packets_received">Packets Received</string>
+    <string name="_0">0</string>
+</resources>
