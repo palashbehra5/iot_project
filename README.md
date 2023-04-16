@@ -10,3 +10,5 @@ State :
 > Required : Sender/Receiver side tuple generation   
 
 Current main activity can be viewed [here](https://github.com/palashbehra5/iot_project/blob/main/iot_2/app/src/main/java/com/example/iot_2/MainActivity.kt)
+
+Download Debug apk from [here](https://github.com/palashbehra5/iot_project/raw/main/iot_2/app/debug/app-debug.apk)
