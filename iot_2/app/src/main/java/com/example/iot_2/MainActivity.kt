@@ -54,6 +54,7 @@ class MainActivity : AppCompatActivity() {
         val tvTuplesSent = findViewById<TextView>(R.id.tvTuplesSent)
         val tvIPAddress = findViewById<TextView>(R.id.tvDeviceIPAddress)
 
+        // Image view result
         val ivResult = findViewById<ImageView>(R.id.ivResult)
 
         btnConnect.visibility = View.GONE
@@ -117,14 +118,16 @@ class MainActivity : AppCompatActivity() {
                         Toast.makeText(applicationContext, "Received", Toast.LENGTH_SHORT).show()
                     }
 
-                    // For every 5 tuples received
-                    if(count==5) {
-
-                        // Do a server call and render image to UI
-
-
-                        count = 0
-                    }
+//                    For every 5 tuples received
+//                    if(count==5) {
+//
+//                        Do a server call and render image to UI
+//                        runOnUiThread {
+//                            Render Image here
+//                        }
+//
+//                        count = 0
+//                    }
 
                     val handler = Handler(Looper.getMainLooper())
                     handler.post {
