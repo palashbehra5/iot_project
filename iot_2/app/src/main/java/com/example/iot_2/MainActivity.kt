@@ -5,25 +5,27 @@ import android.content.res.Configuration
 import android.net.wifi.WifiManager
 import android.net.wifi.p2p.WifiP2pManager
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.system.Os.socket
 import android.text.format.Formatter
 import android.view.View
-import android.widget.Button
-import android.widget.EditText
-import android.widget.ImageView
-import android.widget.TextView
+import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContentProviderCompat.requireContext
 import kotlinx.coroutines.delay
+import java.io.InputStream
 import java.net.InetAddress
+import java.net.ServerSocket
 import java.net.Socket
+import java.nio.charset.StandardCharsets
 import kotlin.concurrent.thread
 
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var state : String
-    private var p2pAddress: String? = null
+//    private var p2pAddress: String? = null
     private lateinit var devIPAddress : String
     private lateinit var senderState : String
     private var numPacketsSent = 0
@@ -34,8 +36,8 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        val wifiP2pManager = getSystemService(Context.WIFI_P2P_SERVICE) as WifiP2pManager
-        val channel = wifiP2pManager.initialize(this, mainLooper, null)
+//        val wifiP2pManager = getSystemService(Context.WIFI_P2P_SERVICE) as WifiP2pManager
+//        val channel = wifiP2pManager.initialize(this, mainLooper, null)
 
         val btnSender = findViewById<Button>(R.id.btnSender)
         val btnReceiver = findViewById<Button>(R.id.btnReceiver)
@@ -92,6 +94,45 @@ class MainActivity : AppCompatActivity() {
             tvIPAddress.visibility = View.VISIBLE
             state = "Receiver"
 
+            /* Start the receiver side thread */
+
+            val serverSocket = ServerSocket(8888)
+            var count = 0
+            var response = "Dummy"
+
+            thread {
+
+                runOnUiThread {
+                    Toast.makeText(applicationContext, "Server Listening", Toast.LENGTH_SHORT).show()
+                }
+
+                while(response!="END"){
+
+                    val socket = serverSocket.accept()
+                    response = readAllBytes(socket.getInputStream())
+                    count+=1
+                    numPacketsReceived+=1
+
+                    runOnUiThread {
+                        Toast.makeText(applicationContext, "Received", Toast.LENGTH_SHORT).show()
+                    }
+
+                    if(count==5) {
+
+                        // Do a server call and render image to UI
+
+                    }
+
+                    val handler = Handler(Looper.getMainLooper())
+                    handler.post {
+                        tvTuplesSent.text = numPacketsSent.toString()
+                    }
+                }
+
+                serverSocket.close()
+
+            }
+
         }
 
         btnConnect.setOnClickListener(){
@@ -110,13 +151,17 @@ class MainActivity : AppCompatActivity() {
              > Pass as bytes
              > Socket : etIPAddress : 12345
              > Do while senderState is not "Stop"
-             > Do this on a thread/ use coroutines
+             > Do this on a thread
 
              */
 
             thread {
 
-                val clientSocket = Socket(etIPAddress.text.toString(), 12345)
+                runOnUiThread {
+                    Toast.makeText(applicationContext, "Sending packets to ${etIPAddress.text}", Toast.LENGTH_SHORT).show()
+                }
+
+                val clientSocket = Socket(etIPAddress.text.toString(), 8888)
 
                 // Holds tuples as strings
                 val result = "Dummy"
@@ -128,15 +173,25 @@ class MainActivity : AppCompatActivity() {
 
                     clientSocket.getOutputStream().write(result.toByteArray())
                     numPacketsSent += 1
-                    tvTuplesSent.text = numPacketsSent.toString()
+
+                    runOnUiThread {
+                        Toast.makeText(applicationContext, "Sent", Toast.LENGTH_SHORT).show()
+                    }
+
+                    val handler = Handler(Looper.getMainLooper())
+                    handler.post {
+                        tvTuplesSent.text = numPacketsSent.toString()
+                    }
+
                     Thread.sleep(1000)
 
                 }
-
                 // Send EXIT Message
                 clientSocket.getOutputStream().write("END".toByteArray())
+                clientSocket.close()
 
-            }.start()
+            }
+
         }
 
         btnStop.setOnClickListener(){
@@ -154,6 +209,20 @@ class MainActivity : AppCompatActivity() {
 
         }
 
+    }
+
+    private fun readAllBytes(inputStream: InputStream): String {
+        val buffer =  {
+            val initialSize = 8192
+            var bytesRead: Int
+            val data = ByteArray(initialSize)
+            val output = StringBuilder()
+            while (inputStream.read(data, 0, initialSize).also { bytesRead = it } != -1) {
+                output.append(String(data, 0, bytesRead, StandardCharsets.UTF_8))
+            }
+            output.toString()
+        }
+        return buffer.toString()
     }
 
 }
